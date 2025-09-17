@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Penginderaan Jauh - GeoLabUPI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penginderaan Jauh - GeoLab UPI</title>
+
     <!-- Styles -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
@@ -11,62 +12,57 @@
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <link rel="stylesheet" href="https://magnummelted.github.io/Penginderaan-Jauh-GeoLab-UPI/style.css" />
+
     <style>
-        html, body, #map {
+        html, body {
             height: 100%;
             margin: 0;
         }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            min-height: calc(100vh - 4rem); /* 4rem = tinggi header */
+        }
     </style>
 </head>
+
 <body class="flex flex-col min-h-screen" x-data="{ open: false }">
+    <!-- HEADER -->
     <header class="bg-white shadow p-4 flex items-center justify-between">
         <h1 class="text-xl font-bold text-gray-800">Penginderaan Jauh</h1>
         <h1 class="text-xl font-bold text-gray-800">GeoLab UPI</h1>
     </header>
-    
-    <div class="flex flex-1 min-h-[calc(100vh-4rem)]" x-data="petaSekolah" x-init="initMap()">
-        
+
+    <!-- KONTEN UTAMA -->
+    <div class="main-container" x-data="petaSIG" x-init="initMap()">
+
         <!-- SIDEBAR KIRI -->
-        <div class="bg-gray-800 text-white w-64 p-4 md:block" :class="{ 'hidden': !open }">
+        <div class="bg-gray-800 text-white w-64 p-4">
             <h2 class="text-lg font-semibold mb-4">Tipe Peta Dasar</h2>
-            <template x-for="(layer, key) in { 'ESRI World Imagery': true, 'Google Satellite': true, 'OpenStreetMap': true}" :key="key">
-                <label class="flex items-center mb-2 transition-colors hover:bg-gray-700 rounded cursor-pointer">
-                    <input type="radio" name="basemap" :value="key" @change="
-                        Object.keys(map._layers).forEach(lid => {
-                            let lyr = map._layers[lid];
-                            if (lyr.options && lyr.options.attribution) {
-                                map.removeLayer(lyr);
-                            }
-                        });
-                        if (key === 'ESRI World Imagery') {
-                            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                                attribution: 'Tiles &copy; Esri'
-                            }).addTo(map);
-                        } else if (key === 'Google Satellite') {
-                            L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                                attribution: '&copy; Google'
-                            }).addTo(map);
-                        } else if (key === 'OpenStreetMap') {
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                attribution: '&copy; OpenStreetMap'
-                            }).addTo(map);
-                        } 
-                    " class="mr-2">
-                    <span x-text="key"></span>
-                </label>
-            </template>
+            <label class="flex items-center mb-2">
+                <input type="radio" name="basemap" value="esri" class="mr-2" @change="setBaseMap('esri')"> ESRI World Imagery
+            </label>
+            <label class="flex items-center mb-2">
+                <input type="radio" name="basemap" value="google" class="mr-2" @change="setBaseMap('google')"> Google Satellite
+            </label>
+            <label class="flex items-center mb-2">
+                <input type="radio" name="basemap" value="osm" class="mr-2" checked @change="setBaseMap('osm')"> OpenStreetMap
+            </label>
         </div>
 
         <!-- MAP -->
-        <div id="map" class="flex-1"></div>
+        <div id="map"></div>
 
         <!-- SIDEBAR KANAN -->
-        <div class="bg-gray-800 text-white w-64 p-4 shadow-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold">Panel Analisis SIG</h2>
-            </div>
+        <div class="bg-gray-800 text-white w-64 p-4">
+            <h2 class="text-lg font-semibold mb-4">Panel Analisis SIG</h2>
             <hr class="border-gray-600 mb-4">
 
+            <!-- Zoom Slider -->
             <div>
                 <h3 class="text-sm font-semibold mb-2">Zoom Muka Peta</h3>
                 <input type="range" min="10" max="500" step="10"
@@ -75,40 +71,44 @@
                 <p class="text-xs text-gray-400 mt-1 text-center" x-text="mapZoomPercent + '%'"></p>
             </div>
 
-            <hr class="border-gray-600 my-2">
+            <hr class="border-gray-600 my-4">
 
-            <!-- Analisis Buffer -->
+            <!-- Buffer -->
             <div x-show="!isBuffering">
                 <h3 class="text-sm font-semibold mb-2">Analisis Buffer</h3>
                 <button @click="startBufferMode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                    Analisis Buffer
+                    Jalankan Buffer
                 </button>
             </div>
 
             <div x-show="isBuffering">
                 <p class="text-sm text-yellow-400 mb-2">Klik titik di peta...</p>
-                <button @click="cancelBufferMode()" class="w-full bg-gray-500 text-white p-2 text-xs rounded hover:bg-gray-600">Batalkan</button>
+                <button @click="cancelBufferMode()" class="w-full bg-gray-500 text-white p-2 text-xs rounded hover:bg-gray-600">
+                    Batalkan
+                </button>
             </div>
 
             <div x-show="isBufferVisible">
                 <button @click="clearBufferAnalysis()" class="w-full mt-2 bg-red-500 text-white p-2 rounded hover:bg-red-600">
-                    Hapus Hasil Analisis
+                    Hapus Hasil Buffer
                 </button>
             </div>
 
-            <hr class="border-gray-600 my-2">
+            <hr class="border-gray-600 my-4">
 
             <!-- Routing -->
             <div x-show="!isRouting">
                 <h3 class="text-sm font-semibold mb-2">Analisis Rute</h3>
                 <button @click="startRoutingMode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                    Analisis Rute
+                    Jalankan Routing
                 </button>
             </div>
 
             <div x-show="isRouting">
                 <p class="text-sm text-yellow-400 mb-2">Klik titik di peta...</p>
-                <button @click="cancelRoutingMode()" class="w-full bg-gray-500 text-white p-2 text-xs rounded hover:bg-gray-600">Batalkan</button>
+                <button @click="cancelRoutingMode()" class="w-full bg-gray-500 text-white p-2 text-xs rounded hover:bg-gray-600">
+                    Batalkan
+                </button>
             </div>
 
             <div x-show="isRouteVisible">
@@ -125,6 +125,36 @@
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <script src="https://magnummelted.github.io/Penginderaan-Jauh-GeoLab-UPI/script.js"></script>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('petaSIG', () => ({
+                map: null,
+                mapZoomPercent: 100,
+                baseZoom: 13,
+
+                initMap() {
+                    this.map = L.map('map').setView([-6.9175, 107.6191], this.baseZoom);
+                    this.setBaseMap('osm');
+                },
+
+                setBaseMap(type) {
+                    if (this.currentBase) this.map.removeLayer(this.currentBase);
+                    const sources = {
+                        osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        esri: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                        google: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
+                    };
+                    this.currentBase = L.tileLayer(sources[type], { attribution: '&copy; OpenStreetMap / Esri / Google' }).addTo(this.map);
+                },
+
+                applyMapZoom() {
+                    const scale = this.mapZoomPercent / 100;
+                    const newZoom = this.baseZoom + Math.log2(scale);
+                    this.map.setZoom(newZoom);
+                }
+            }))
+        })
+    </script>
 </body>
 </html>
