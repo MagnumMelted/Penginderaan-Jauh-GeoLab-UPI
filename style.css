@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-/* Reset some default styles */
+
+/* Reset */
 * {
     margin: 0;
     padding: 0;
@@ -9,109 +10,77 @@
 html, body {
     height: 100%;
     margin: 0;
-}
-
-#map {
-    height: 100%;
-    width: 100%;
-}
-
-/* General styles */
-body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
     background-color: #ECF0F1;
 }
 
-.sidebar { 
-    width: 300px; 
-    transition: transform 0.3s ease; 
-    background-color: #2C3E50; 
+body {
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Peta agar full tinggi viewport dikurangi header */
+#map {
+    height: calc(100vh - 4rem);
+    width: 100%;
+}
+
+/* ----- SIDEBAR ----- */
+.sidebar {
+    width: 300px;
+    background-color: #2C3E50;
     color: white;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
-@media (max-width: 768px) {
-    .sidebar { 
-        transform: translateX(-100%); 
-        position: fixed; 
-        top: 4rem; 
-        left: 0; 
-        z-index: 1000; 
-    }
-    .sidebar.open { transform: translateX(0); }
-}
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
-.sidebar ul li {
-    padding: 10px;
-    border-bottom: 1px solid #34495E;
-}
-.sidebar ul li a {
-    color: white;
-    text-decoration: none;
-    display: block;
-}
-.sidebar ul li a:hover {
-    background-color: #34495E;
+.sidebar h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
 }
 
-/* Animasi untuk tombol toggle */
-.toggle-btn {
-    transition: transform 0.3s ease-in-out;
+.sidebar label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
 }
 
-.toggle-btn:active {
-    animation: scaleClick 0.2s ease-in-out;
+.sidebar input[type="radio"] {
+    margin-right: 0.5rem;
 }
 
-@keyframes scaleClick {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+.sidebar hr {
+    border-color: #34495E;
+    margin: 1.5rem 0;
 }
 
-/* Animasi rotate untuk ikon saat open */
-.toggle-btn .rotate-90 {
-    transform: rotate(90deg);
-    transition: transform 0.3s ease-in-out;
+/* ----- ZOOM SLIDER ----- */
+input[type="range"] {
+    width: 100%;
 }
 
-.custom-toolbar {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    padding: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+input[type="range"]::-webkit-slider-thumb {
+    background: #10B981;
+    cursor: pointer;
 }
 
-/* Styling legend */
-.custom-legend {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+input[type="range"]::-moz-range-thumb {
+    background: #10B981;
+    cursor: pointer;
 }
 
-/* Container zoom */
+/* ----- LEAFLET STYLING ----- */
+
+/* Zoom control */
 .leaflet-control-zoom {
-    filter: invert(1) !important; /* Membuat ikon putih */
     background-color: white;
     border-radius: 6px !important;
     border: none !important;
     overflow: hidden !important;
 }
 
-/* Tombol + dan - */
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
     color: black !important;
@@ -121,48 +90,40 @@ body {
     font-size: 18px !important;
 }
 
-/* Hover */
-.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom-out:hover {
-    background-image: rgba(255, 255, 255, 0.20) !important;
-}
-
-/* Styling untuk Draw Leaflet, dibuat sama dengan control zoom */
-/* Container toolbar */
+/* Draw toolbar */
 .leaflet-draw-toolbar {
     border-radius: 6px !important;
     border: none !important;
     overflow: hidden !important;
 }
 
-/* Tombol draw */
 .leaflet-draw-toolbar a {
-    filter: invert(1) !important; /* Membuat ikon putih */
+    filter: invert(1) !important;
     border: none !important;
     font-weight: bold !important;
     font-size: 18px !important;
-    padding: 8px !important; /* Tambahkan padding untuk tombol */
+    padding: 8px !important;
 }
 
-/* Styling for Control Layers (same as draw toolbar) */
+/* Layer control */
 .leaflet-control-layers {
     border-radius: 6px !important;
     border: none !important;
     overflow: hidden !important;
 }
-/* Container layers */
+
 .leaflet-control-layers-list {
-    background: rgb(0, 0, 0) !important;
+    background: rgba(0, 0, 0, 0.9) !important;
     padding: 10px !important;
     border-radius: 6px !important;
+    color: white;
 }
-/* Layer items */
+
 .leaflet-control-layers-selector {
-    border: none !important;
-    font-weight: bold !important;
-    font-size: 18px !important;
-    padding: 8px !important; /* Tambahkan padding untuk tombol */
+    margin-right: 8px;
 }
 
-#map { height: calc(100vh - 4rem); }
-
+/* ----- HEADER ----- */
+header {
+    height: 4rem;
+}
