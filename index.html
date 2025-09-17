@@ -34,21 +34,6 @@
     <div class="flex flex-1" x-data="petaSekolah" x-init="initMap()">
         <div class="bg-gray-800 text-white w-64 p-4 md:block" :class="{ 'hidden': !open }">
             <div>
-                <h2 class="text-lg font-semibold mb-2">Pencarian Sekolah</h2>
-                <p class="text-sm text-gray-400 mb-4">Gunakan pencarian untuk menemukan sekolah tertentu.</p>
-                <div class="mb-4 relative">
-                    <input x-model="kategori" 
-                           class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500" 
-                           placeholder="Cari nama sekolah..." type="text">
-                    
-                    <ul x-show="filteredSekolah().length > 0" 
-                        class="absolute z-10 bg-white text-black border border-gray-200 w-full mt-1 max-h-60 overflow-y-auto rounded shadow">
-                        <template x-for="item in filteredSekolah()" :key="item.properties.Nama">
-                            <li @click="zoomTo(item); kategori=item.properties.Nama;" 
-                                class="px-3 py-2 hover:bg-blue-100 cursor-pointer"
-                                x-text="item.properties.Nama"></li>
-                        </template>
-                    </ul>
                 </div>
                 
                 <button @click="locateUser()" 
@@ -67,36 +52,11 @@
                 <hr class="border-gray-600 mb-4">
 
                 <div>
-                    <h2 class="text-md font-semibold mb-2">Input Manual Sekolah</h2>
-                    <button @click="startAddSchool()" 
-                        class="w-full bg-blue-600 text-white p-2 text-xs rounded hover:bg-blue-700 mb-2">
-                        ➕ Tambah Sekolah
-                    </button>
-
-                    <button @click="exportSchoolsToExcel()" 
-                        class="w-full bg-green-600 text-white p-2 text-xs rounded hover:bg-green-700 mb-4">
-                        📤 Unduh Excel
-                    </button>
+                
                 </div>
 
                 <div class="mb-4">
-                    <h3 class="text-sm font-semibold mb-2">Kategori Sekolah</h3>
-                    <template x-for="(val, key) in layers" :key="key">
-                        <label class="flex items-center mb-2 transition-colors hover:bg-gray-700 rounded cursor-pointer">
-                            <input type="checkbox" :value="key" x-model="layers[key]" @change="updateMap()" class="mr-2">
-                            <span class="w-4 h-4 inline-block mr-2 rounded-full" 
-                                  :class="{
-                                    'bg-blue-500': key === 'sd',
-                                    'bg-green-500': key === 'smp',
-                                    'bg-yellow-500': key === 'sma',
-                                    'bg-purple-500': key === 'man',
-                                    'bg-red-500': key === 'mas',
-                                    'bg-yellow-300': key === 'mi',
-                                    'bg-indigo-500': key === 'mts'
-                                  }"></span>
-                            <span x-text="key.toUpperCase()"></span>
-                        </label>
-                    </template>
+                    
                 </div>
                 
                 <div class="mb-4">
@@ -270,4 +230,5 @@
 </body>
 
 </html>
+
 
