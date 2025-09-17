@@ -1,160 +1,141 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penginderaan Jauh - GeoLab UPI</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penginderaan Jauh - GeoLab UPI</title>
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
-    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="https://magnummelted.github.io/Penginderaan-Jauh-GeoLab-UPI/style.css" />
+  <!-- Leaflet & Geoman -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css">
 
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-        #map {
-            height: 100%;
-            width: 100%;
-        }
-        .main-container {
-            display: flex;
-            flex: 1;
-            min-height: calc(100vh - 4rem); /* 4rem = tinggi header */
-        }
-    </style>
+  <!-- Tailwind -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://magnummelted.github.io/Persebaran-Sekolah-Kota-Bandung/style.css">
 </head>
-
 <body class="flex flex-col min-h-screen" x-data="{ open: false }">
-    <!-- HEADER -->
-    <header class="bg-white shadow p-4 flex items-center justify-between">
-        <h1 class="text-xl font-bold text-gray-800">Penginderaan Jauh</h1>
-        <h1 class="text-xl font-bold text-gray-800">GeoLab UPI</h1>
-    </header>
 
-    <!-- KONTEN UTAMA -->
-    <div class="main-container" x-data="petaSIG" x-init="initMap()">
+  <header class="bg-white shadow p-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-gray-800">Penginderaan Jauh</h1>
+    <h1 class="text-xl font-bold text-gray-800">GeoLab UPI</h1>
+  </header>
 
-        <!-- SIDEBAR KIRI -->
-        <div class="bg-gray-800 text-white w-64 p-4">
-            <h2 class="text-lg font-semibold mb-4">Tipe Peta Dasar</h2>
-            <label class="flex items-center mb-2">
-                <input type="radio" name="basemap" value="esri" class="mr-2" @change="setBaseMap('esri')"> ESRI World Imagery
-            </label>
-            <label class="flex items-center mb-2">
-                <input type="radio" name="basemap" value="google" class="mr-2" @change="setBaseMap('google')"> Google Satellite
-            </label>
-            <label class="flex items-center mb-2">
-                <input type="radio" name="basemap" value="osm" class="mr-2" checked @change="setBaseMap('osm')"> OpenStreetMap
-            </label>
-        </div>
+  <div class="flex flex-1" x-data="petaApp" x-init="initMap()">
 
-        <!-- MAP -->
-        <div id="map"></div>
-
-        <!-- SIDEBAR KANAN -->
-        <div class="bg-gray-800 text-white w-64 p-4">
-            <h2 class="text-lg font-semibold mb-4">Panel Analisis SIG</h2>
-            <hr class="border-gray-600 mb-4">
-
-            <!-- Zoom Slider -->
-            <div>
-                <h3 class="text-sm font-semibold mb-2">Zoom Muka Peta</h3>
-                <input type="range" min="10" max="500" step="10"
-                    x-model="mapZoomPercent" @input="applyMapZoom()"
-                    class="w-full accent-green-500">
-                <p class="text-xs text-gray-400 mt-1 text-center" x-text="mapZoomPercent + '%'"></p>
-            </div>
-
-            <hr class="border-gray-600 my-4">
-
-            <!-- Buffer -->
-            <div x-show="!isBuffering">
-                <h3 class="text-sm font-semibold mb-2">Analisis Buffer</h3>
-                <button @click="startBufferMode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                    Jalankan Buffer
-                </button>
-            </div>
-
-            <div x-show="isBuffering">
-                <p class="text-sm text-yellow-400 mb-2">Klik titik di peta...</p>
-                <button @click="cancelBufferMode()" class="w-full bg-gray-500 text-white p-2 text-xs rounded hover:bg-gray-600">
-                    Batalkan
-                </button>
-            </div>
-
-            <div x-show="isBufferVisible">
-                <button @click="clearBufferAnalysis()" class="w-full mt-2 bg-red-500 text-white p-2 rounded hover:bg-red-600">
-                    Hapus Hasil Buffer
-                </button>
-            </div>
-
-            <hr class="border-gray-600 my-4">
-
-            <!-- Routing -->
-            <div x-show="!isRouting">
-                <h3 class="text-sm font-semibold mb-2">Analisis Rute</h3>
-                <button @click="startRoutingMode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                    Jalankan Routing
-                </button>
-            </div>
-
-            <div x-show="isRouting">
-                <p class="text-sm text-yellow-400 mb-2">Klik titik di peta...</p>
-                <button @click="cancelRoutingMode()" class="w-full bg-gray-500 text-white p-2 text-xs rounded hover:bg-gray-600">
-                    Batalkan
-                </button>
-            </div>
-
-            <div x-show="isRouteVisible">
-                <button @click="clearRoutingAnalysis()" class="w-full mt-2 bg-red-500 text-white p-2 rounded hover:bg-red-600">
-                    Hapus Hasil Rute
-                </button>
-            </div>
-        </div>
+    <!-- SIDEBAR KIRI -->
+    <div class="bg-gray-800 text-white w-64 p-4">
+      <h2 class="text-lg font-semibold mb-2">Tipe Peta Dasar</h2>
+      <div class="space-y-2">
+        <label class="flex items-center">
+          <input type="radio" name="basemap" value="esri" @change="changeBasemap('esri')" class="mr-2">
+          ESRI World Imagery
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="basemap" value="google" @change="changeBasemap('google')" class="mr-2">
+          Google Satellite
+        </label>
+        <label class="flex items-center">
+          <input type="radio" name="basemap" value="osm" @change="changeBasemap('osm')" class="mr-2" checked>
+          OpenStreetMap
+        </label>
+      </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <!-- MAP -->
+    <div id="map" class="flex-1"></div>
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('petaSIG', () => ({
-                map: null,
-                mapZoomPercent: 100,
-                baseZoom: 13,
+    <!-- SIDEBAR KANAN -->
+    <div class="bg-gray-800 text-white w-64 p-4">
 
-                initMap() {
-                    this.map = L.map('map').setView([-6.9175, 107.6191], this.baseZoom);
-                    this.setBaseMap('osm');
-                },
+      <h2 class="text-lg font-semibold mb-4">Panel Analisis SIG</h2>
 
-                setBaseMap(type) {
-                    if (this.currentBase) this.map.removeLayer(this.currentBase);
-                    const sources = {
-                        osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        esri: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                        google: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
-                    };
-                    this.currentBase = L.tileLayer(sources[type], { attribution: '&copy; OpenStreetMap / Esri / Google' }).addTo(this.map);
-                },
+      <!-- Zoom -->
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold mb-2">Zoom Muka Peta</h3>
+        <input type="range" min="10" max="300" step="10"
+          x-model="mapZoomPercent" @input="applyMapZoom()"
+          class="w-full accent-green-500">
+        <p class="text-xs text-gray-400 mt-1 text-center" x-text="mapZoomPercent + '%'"></p>
+      </div>
 
-                applyMapZoom() {
-                    const scale = this.mapZoomPercent / 100;
-                    const newZoom = this.baseZoom + Math.log2(scale);
-                    this.map.setZoom(newZoom);
-                }
-            }))
-        })
-    </script>
+      <!-- Input Judul -->
+      <div class="mb-2">
+        <label class="text-sm font-semibold block mb-1">Judul Peta</label>
+        <input type="text" x-model="layoutTitle"
+            class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 text-sm"
+            placeholder="Contoh: Peta Persebaran">
+      </div>
+
+      <!-- Input Layer Digitasi -->
+      <div class="mb-4">
+        <label class="text-sm font-semibold block mb-1">Nama Layer Digitasi</label>
+        <input type="text" x-model="digitasiLayerName"
+            class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 text-sm"
+            placeholder="Contoh: Lokasi Rencana">
+      </div>
+
+      <!-- Tombol Layout -->
+      <div class="flex gap-2 mb-6">
+        <button @click="saveLayoutInput()"
+            class="flex-1 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm">
+            Simpan Input
+        </button>
+        <button @click="openMapLayout()"
+            class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600 text-sm">
+            Buka Layout
+        </button>
+      </div>
+
+      <!-- Analisis Buffer -->
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold mb-2">Analisis Buffer</h3>
+        <template x-if="!isBuffering">
+          <button @click="startBufferMode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm">
+            Mulai Buffer
+          </button>
+        </template>
+        <template x-if="isBuffering">
+          <button @click="cancelBufferMode()" class="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600 text-sm">
+            Batalkan
+          </button>
+        </template>
+        <template x-if="isBufferVisible">
+          <button @click="clearBufferAnalysis()" class="mt-2 w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 text-sm">
+            Hapus Hasil Buffer
+          </button>
+        </template>
+      </div>
+
+      <!-- Analisis Routing -->
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold mb-2">Analisis Routing</h3>
+        <template x-if="!isRouting">
+          <button @click="startRoutingMode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 text-sm">
+            Mulai Routing
+          </button>
+        </template>
+        <template x-if="isRouting">
+          <button @click="cancelRoutingMode()" class="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600 text-sm">
+            Batalkan
+          </button>
+        </template>
+        <template x-if="isRouteVisible">
+          <button @click="clearRoutingAnalysis()" class="mt-2 w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 text-sm">
+            Hapus Hasil Routing
+          </button>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  <script src="https://magnummelted.github.io/Persebaran-Sekolah-Kota-Bandung/script.js"></script>
 </body>
 </html>
