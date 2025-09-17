@@ -6,6 +6,16 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
 /* General styles */
 body {
     font-family: 'Roboto', sans-serif;
@@ -155,3 +165,4 @@ body {
 }
 
 #map { height: calc(100vh - 4rem); }
+
